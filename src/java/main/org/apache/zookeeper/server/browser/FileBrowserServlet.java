@@ -64,14 +64,14 @@ public class FileBrowserServlet extends HttpServlet {
 			baseNode = "";
 		}
 
-		//mainTemplate = new String(zkServer.getZKDatabase().getData("/configs/browser/views/application" + baseNode, stat, null));
-		template = getTemplate("main", "/configs/browser/views/application/index.html");
-		layoutTemplate = getTemplate("layout", "/configs/browser/views/layouts/application.html");
+		//mainTemplate = new String(zkServer.getZKDatabase().getData("/content-browser/views/application" + baseNode, stat, null));
+		template = getTemplate("main", "/content-browser/views/application/index.html");
+		layoutTemplate = getTemplate("layout", "/content-browser/views/layouts/application.html");
 
 		if (template == null) {
-			logger.error("loading " +  "/configs/browser/assets" + baseNode);
-			template = getTemplate("x", "/configs/browser/assets" + baseNode);
-			response.getWriter().write("loading " + "/configs/browser/assets" + baseNode);
+			logger.error("unable to load " +  "/content-browser/assets" + baseNode + ", please create the node in your zookeeper instance");
+			template = getTemplate("x", "/content-browser/assets" + baseNode);
+			response.getWriter().write("loading " + "/content-browser/assets" + baseNode);
 			return;
 		}
 
