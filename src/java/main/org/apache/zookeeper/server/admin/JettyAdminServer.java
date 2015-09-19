@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.zookeeper.server.ZooKeeperServer;
+import org.apache.zookeeper.server.browser.FileBrowserServlet;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.servlet.Context;
@@ -64,6 +65,8 @@ public class JettyAdminServer implements AdminServer {
     private String address;
     private final String commandUrl;
 
+	private FileBrowserServlet fileBrowserServlet;
+
     public JettyAdminServer() throws AdminServerException {
         this(System.getProperty("zookeeper.admin.serverAddress",
                 DEFAULT_ADDRESS), Integer.getInteger(
@@ -85,6 +88,10 @@ public class JettyAdminServer implements AdminServer {
         server.setHandler(context);
         context.addServlet(new ServletHolder(new CommandServlet()), commandUrl
                 + "/*");
+  
+        fileBrowserServlet = new FileBrowserServlet();
+        fileBrowserServlet.setZkServer(zkServer);
+        context.addServlet(new ServletHolder(fileBrowserServlet), commandUrl + "/browser/*");
     }
 
     /**
@@ -137,6 +144,7 @@ public class JettyAdminServer implements AdminServer {
     @Override
     public void setZooKeeperServer(ZooKeeperServer zkServer) {
         this.zkServer = zkServer;
+        fileBrowserServlet.setZkServer(zkServer);
     }
 
     private class CommandServlet extends HttpServlet {
