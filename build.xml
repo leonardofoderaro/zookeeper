@@ -99,6 +99,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
     <property name="javadoc.packages" value="org.apache.*" />
 
     <property name="dist.dir" value="${build.dir}/${final.name}"/>
+    <property name="resources.dir" value="${basedir}/resources"/>
     <property name="dist.maven.dir" value="${dist.dir}/dist-maven"/>
 
     <property name="clover.home" location="${env.CLOVER_HOME}"/>
@@ -232,6 +233,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
         <include name="**/*.jar" />
       </fileset>
       <pathelement path="${clover.jar}" />
+      
     </path>
 
     <path id="test.java.classpath">
@@ -253,6 +255,8 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
     <!-- ====================================================== -->
     <target name="init">    
         <mkdir dir="${build.classes}" />
+
+        <mkdir dir="${build.dir}/templates" />
 
         <mkdir dir="${ivy.lib}"/>
         <mkdir dir="${ivy.package.lib}"/>
@@ -430,6 +434,11 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
       <ivy:cachepath pathid="mvn-ant-task-classpath" conf="mvn-ant-task"/>
     </target>
     <target name="compile" depends="ivy-retrieve,clover,build-generated">
+
+      <copy todir="${build.dir}/classes">
+        <fileset dir="${resources.dir}" />
+      </copy>
+
         <javac srcdir="${java.src.dir}" destdir="${build.classes}" includeantruntime="false"
                target="${javac.target}" source="${javac.source}" debug="on" encoding="${build.encoding}">
             <classpath refid="java.classpath"/>
@@ -605,6 +614,10 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
                 <attribute name="Export-Package" value='org.apache.zookeeper;version="${version}",org.apache.zookeeper.client;version="${version}",org.apache.zookeeper.data;version="${version}",org.apache.zookeeper.version;version="${version}",org.apache.zookeeper.server;version="${version}",org.apache.zookeeper.server.auth;version="${version}",org.apache.zookeeper.server.persistence;version="${version}",org.apache.zookeeper.server.quorum;version="${version}",org.apache.zookeeper.common;version="${version}"'/>
             </manifest>
         </jar>
+
+      <!-- copy todir="${classes.dir}">
+        <fileset dir="${docs.src}/build/site/" />
+      </copy -->
     </target>
     
     <!-- ====================================================== -->
