@@ -1,6 +1,11 @@
 package org.apache.zookeeper.server.browser;
 
+import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
@@ -26,8 +31,6 @@ import org.apache.zookeeper.server.DataTree;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 
 
 public class FileBrowserServlet extends HttpServlet {
@@ -65,16 +68,47 @@ public class FileBrowserServlet extends HttpServlet {
 		}
 
 		//mainTemplate = new String(zkServer.getZKDatabase().getData("/content-browser/views/application" + baseNode, stat, null));
-		template = getTemplate("main", "/content-browser/views/application/index.html");
-		layoutTemplate = getTemplate("layout", "/content-browser/views/layouts/application.html");
+
+		/* if (is != null) {
+			InputStreamReader isr = new InputStreamReader(is);
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = new BufferedReader(isr);
+			String read = br.readLine();
+
+			while(read != null) {
+				sb.append(read);
+				read =br.readLine();
+
+			}
+			response.getWriter().write(sb.toString());
+			return;
+		} */
+
+		//template = getTemplateFromClasspath("/views/application/index.html");
+		template = getTemplateFromClasspath("/views/application/index.html");
+		layoutTemplate = getTemplateFromClasspath("/views/layouts/application.html");
 
 		if (template == null) {
-			logger.error("unable to load " +  "/content-browser/assets" + baseNode + ", please create the node in your zookeeper instance");
 			template = getTemplate("x", "/content-browser/assets" + baseNode);
 			response.getWriter().write("loading " + "/content-browser/assets" + baseNode);
 			return;
 		}
+		
+		/*
+		if (template != null) {
+			VelocityContext layoutCtx = new VelocityContext();
 
+			StringWriter sw = new StringWriter();
+
+			template.merge(layoutCtx, sw);
+			
+			System.out.println("template: " + sw.toString());
+
+			response.getWriter().write(sw.toString());
+
+			return;
+		} */
+		
 		boolean isFolder = false;
 
 		// check if exists a folder
@@ -84,8 +118,8 @@ public class FileBrowserServlet extends HttpServlet {
 				List<String> nodes = tree.getChildren(baseNode+"/", stat, null);
 
 				isFolder = (nodes != null);
-				
-			    response.getWriter().write("isFolder " + isFolder);
+
+				response.getWriter().write("isFolder " + isFolder);
 
 			} catch (NoNodeException e) {
 				// TODO Auto-generated catch block
@@ -157,6 +191,68 @@ public class FileBrowserServlet extends HttpServlet {
 		layoutTemplate.merge(layoutCtx, sw);
 
 		response.getWriter().write(sw.toString());
+
+	}
+
+	private Template getTemplateFromClasspath(String string) {
+
+		InputStream is = this.getClass().getResourceAsStream(string);
+		
+
+		if (is != null) {
+			InputStreamReader isr = new InputStreamReader(is);
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = new BufferedReader(isr);
+			
+			/*
+			String read;
+			try {
+				read = br.readLine();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				logger.error("err", e);
+				return null;
+			}
+
+			while(read != null) {
+				sb.append(read);
+				try {
+					read =br.readLine();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+       				logger.error("err", e);
+					return null;
+				}
+
+			} */
+			
+			
+			
+			RuntimeServices runtimeServices = RuntimeSingleton.getRuntimeServices();
+
+			Template template = new Template();
+
+			template.setRuntimeServices(runtimeServices);
+		
+			SimpleNode node = null;
+			
+			try {
+				node = runtimeServices.parse(br, "test");
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				logger.error("error while parsing new template", e);
+			}
+
+			template.setData(node);
+
+			template.initDocument();
+			
+			return template;
+			
+		} 
+		
+        logger.error("not found");
+		return null;
 
 	}
 
